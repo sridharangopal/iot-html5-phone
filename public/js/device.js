@@ -64,6 +64,8 @@
 		if (isConnected) {
 	    	var payload = {
 	            "d": {
+					"id": window.deviceId,
+					"ts": (new Date()).getTime(),
 					"ax": ax.toFixed(2),
 					"ay": ay.toFixed(2),
 					"az": az.toFixed(2),
