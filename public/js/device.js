@@ -24,6 +24,9 @@
 	var topic = "iot-2/evt/sensorData/fmt/json";
     var isConnected = false;
 
+	var lat = null;
+	var lng = null;
+
     window.ondevicemotion = function(event) {
         ax = parseFloat((event.acceleration.x || 0));
         ay = parseFloat((event.acceleration.y || 0));
@@ -51,6 +54,15 @@
 
 	window.msgCount = 0;
 
+	var updatePersonalLocation = function(position) {
+		lat = position.coords.latitude;
+		lng = position.coords.longitude; 
+	}
+
+	if (navigator.geolocation) {
+		navigator.geolocation.watchPosition(updatePersonalLocation);
+	}
+
 	function getId() {
 		window.deviceId = prompt("Enter an ID for your phone:");
 		if (window.deviceId) {
@@ -66,6 +78,8 @@
 	            "d": {
 					"id": window.deviceId,
 					"ts": (new Date()).getTime(),
+					"lat": lat,
+					"lng": lng,
 					"ax": ax.toFixed(2),
 					"ay": ay.toFixed(2),
 					"az": az.toFixed(2),
