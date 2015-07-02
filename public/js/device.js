@@ -80,14 +80,14 @@
 	            "d": {
 					"id": window.deviceId,
 					"ts": (new Date()).getTime(),
-					"lat": window.lat,
-					"lng": window.lng,
-					"ax": ax.toFixed(2),
-					"ay": ay.toFixed(2),
-					"az": az.toFixed(2),
-					"oa": oa.toFixed(2),
-					"ob": ob.toFixed(2),
-					"og": og.toFixed(2)
+					"lat": parseFloat(window.lat),
+					"lng": parseFloat(window.lng),
+					"ax": parseFloat(ax.toFixed(2)),
+					"ay": parseFloat(ay.toFixed(2)),
+					"az": parseFloat(az.toFixed(2)),
+					"oa": parseFloat(oa.toFixed(2)),
+					"ob": parseFloat(ob.toFixed(2)),
+					"og": parseFloat(og.toFixed(2))
 				}
 	        };
 	        var message = new Paho.MQTT.Message(JSON.stringify(payload));
