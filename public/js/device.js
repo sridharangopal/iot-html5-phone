@@ -11,16 +11,16 @@
  *   http://www.eclipse.org/org/documents/edl-v10.php.
  *
  * Contributors:
- *   Bryan Boyd - Initial implementation 
+ *   Bryan Boyd - Initial implementation
  *******************************************************************************/
 (function(window){
     var ax = 0, ay = 0, az = 0, oa = 0, ob = 0, og = 0;
-	
+
 	var client;
     var orgId;
 	var clientId;
     var password;
-    
+
 	var topic = "iot-2/evt/sensorData/fmt/json";
     var isConnected = false;
 
@@ -56,7 +56,7 @@
 
 	var updatePersonalLocation = function(position) {
 		window.lat = position.coords.latitude;
-		window.lng = position.coords.longitude; 
+		window.lng = position.coords.longitude;
 		$("#lat").html(window.lat.toFixed(6));
 		$("#lng").html(window.lng.toFixed(6));
 	}
@@ -66,7 +66,7 @@
 	}
 
 	function getId() {
-		window.deviceId = prompt("Enter an ID for your phone:");
+		window.deviceId = prompt("Enter a unique ID for your phone containing only letters and numbers:");
 		if (window.deviceId) {
 			$("#deviceId").html(window.deviceId);
 			getDeviceCredentials();
@@ -102,7 +102,7 @@
 				isConnected = false;
 				changeConnectionStatusImage("/images/disconnected.svg");
 				document.getElementById("connection").innerHTML = "Disconnected";
-				setTimeout(connectDevice(client), 1000);		
+				setTimeout(connectDevice(client), 1000);
 			}
 		}
     }
@@ -118,9 +118,9 @@
     function onConnectFailure(){
     	// The device failed to connect. Let's try again in one second.
         console.log("Could not connect to IoT Foundation! Trying again in one second.");
-        setTimeout(connectDevice(client), 1000);	
+        setTimeout(connectDevice(client), 1000);
     }
-    
+
     function connectDevice(client){
     	changeConnectionStatusImage("/images/connecting.svg");
     	document.getElementById("connection").innerHTML = "Connecting";
@@ -132,7 +132,7 @@
 			password: password
 		});
     }
-    
+
     function getDeviceCredentials() {
 		$.ajax({
 			url: "/credentials/"+window.deviceId,
@@ -143,7 +143,7 @@
 				orgId = response.org;
 				clientId = "d:"+orgId+":"+response.deviceType+":"+response.deviceId;
 				password = response.token;
-				
+
 				client = new Paho.MQTT.Client(orgId+".messaging.internetofthings.ibmcloud.com", 1883, clientId);
 
 				console.log("Attempting connect");
@@ -163,7 +163,7 @@
 			}
 		});
     }
-	
+
     $(document).ready(function() {
 		// prompt the user for id
 		getId();
