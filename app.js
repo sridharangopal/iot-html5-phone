@@ -95,102 +95,75 @@ function getUserCredentials(deviceId, callback) {
 	// check to see if this device exists in the DB
 	device_credentials.get(deviceId, function(err, body) {
 		if (!err) {
-			//console.log("Found doc: ", body, body.token);
+			console.log("Found doc: ", body, body.token);
 			callback({ deviceType: device_type, deviceId: deviceId, token: body.token, org: iot_org });
 		} else {
 			// register with IoT Foundation, return credentials
-			var options = {
-				host: 'internetofthings.ibmcloud.com',
+
+			// register device type
+			var typeData = JSON.stringify({id:"iotphone"});
+			var typeOpts = {
+				host: iot_props.org + '.internetofthings.ibmcloud.com',
 				port: 443,
 				method: 'POST',
 				headers: {
 					"content-type" : "application/json"
 				},
-				path: 'api/v0001/organizations/'+iot_props.org+'/devices',
+				path: 'api/v0002/device/types',
 				auth: iot_props.apiKey + ':' + iot_props.apiToken
 			};
-			var iot_req = https.request(options, function(iot_res) {
-				var str = '';
-				iot_res.on('data', function(chunk) {
-					str += chunk;
-					//console.log("on data ", chunk);
-				});
-				iot_res.on('end', function() {
-					var creds = JSON.parse(str); 
-					console.log("on end", creds);
-					if (creds.id) {
-						device_credentials.insert({ token: creds.password }, creds.id, function(err, body) {
-							console.log(creds);
-							if (!err) {
-								callback({ deviceType: device_type, deviceId: creds.id, token: creds.password, org: iot_org });
-							} else {
-								callback({ error: err.code });
-							}
+			var deviceData = JSON.stringify({deviceId:deviceId,authToken:deviceId});
+			var deviceOpts = {
+				host: iot_props.org + '.internetofthings.ibmcloud.com',
+				port: 443,
+				method: 'POST',
+				headers: {
+					"content-type" : "application/json"
+				},
+				path: 'api/v0002/device/types/iotphone/devices/',
+				auth: iot_props.apiKey + ':' + iot_props.apiToken
+			};
+
+			var deviceType_req = https.request(typeOpts, function(deviceType_res) {
+				try {
+					var str = '';
+					deviceType_res.on('data', function(chunk) {
+						str += chunk;
+					});
+					deviceType_res.on('end', function() {
+						// register device
+						var device_req = https.request(deviceOpts, function(device_res) {
+							var str = '';
+							device_res.on('data', function(chunk) {
+								str += chunk;
+							});
+							device_res.on('end', function() {
+								try {
+									var creds = JSON.parse(str); 
+									if (creds.deviceId) {
+										device_credentials.insert({ token: creds.authToken }, creds.deviceId, function(err, body) {
+											if (!err) {
+												callback({ deviceType: creds.typeId, deviceId: creds.deviceId, token: creds.authToken, org: iot_org });
+											} else {
+												callback({ error: err.code });
+											}
+										});
+									} else {
+										callback({ error: err.code });
+									}
+								} catch (e) { console.log(e.stack); callback({ error: 500 }); }
+							});
 						});
-					}
-				});
+						device_req.write(deviceData);
+						device_req.end();
+					});
+				} catch (e) { console.log(e); }
 			}).on('error', function(e) { console.log ("got error, " + e); });
-			iot_req.write(JSON.stringify({ type: device_type, id: deviceId }));
-			iot_req.end();
+			deviceType_req.write(typeData);
+			deviceType_req.end();
 		}
 	});
 }
-
-function clean(res) {
-	// destroy and recreate database
-	Cloudant({account:db_props.username, password:db_props.password}, function(err, cloudant) {
-		cloudant.db.destroy('device_credentials', function() {
-			cloudant.db.create('device_credentials', function() {
-				console.log("cleaned db device_credentials");
-			});
-		});
-	})
-
-	// delete all registered devices
-	var options = {
-		host: 'internetofthings.ibmcloud.com',
-		port: 443,
-		method: 'GET',
-		headers: {
-			"content-type" : "application/json"
-		},
-		path: 'api/v0001/organizations/'+iot_props.org+'/devices',
-		auth: iot_props.apiKey + ':' + iot_props.apiToken
-	};
-	var iot_req = https.request(options, function(iot_res) {
-		var str = '';
-		iot_res.on('data', function (chunk) {
-			str += chunk;
-			console.log("on data ", chunk);
-		});
-		iot_res.on('end', function () {
-			var devices = JSON.parse(str); 
-			for (var i in devices) {
-				var dId = devices[i].id;
-				console.log("deleting " + dId);
-				var deleteRequest = https.request({
-					host: 'internetofthings.ibmcloud.com',
-					port: 443,
-					method: 'DELETE',
-					headers: {
-						"content-type" : "application/json"
-					},
-					path: 'api/v0001/organizations/'+iot_props.org+'/devices/'+dId.split("-")[0]+'/' + dId,
-					auth: iot_props.apiKey + ':' + iot_props.apiToken
-				}, function (deleteResponse) { console.log(deleteResponse.statusCode); });
-				deleteRequest.end();
-			}
-			if (res) { res.end(); }
-		});
-	}).on('error', function(e) { console.log ("got error, " + e); });
-	iot_req.end();
-}
-
-app.get('/clean', function(req, res) {
-	clean(res);
-});
-
-//////////////////
 
 http.createServer(app).listen(app.get('port'), function(){
 	console.log('Express server listening on port ' + app.get('port'));
