@@ -66,7 +66,7 @@
 	}
 
 	function getId() {
-		window.deviceId = prompt("Enter a unique ID for your phone containing only letters and numbers:");
+		window.deviceId = prompt("Enter a unique ID of at least 8 characters containing only letters and numbers:");
 		if (window.deviceId) {
 			$("#deviceId").html(window.deviceId);
 			getDeviceCredentials();
