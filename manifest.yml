@@ -1,11 +1,3 @@
-declared-services:
-  iot-phone-cloudant-cloudantNoSQLDB:
-    label: cloudantNoSQLDB
-    plan: Shared
-  iot-phone-iotf-service:
-    label: iotf-service
-    plan: iotf-service-free
-
 applications:
 - services:
   - ignite-2016-hodor-cloudantNoSQLDB
