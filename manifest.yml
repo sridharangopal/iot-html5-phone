@@ -8,10 +8,10 @@ declared-services:
 
 applications:
 - services:
-  - iot-phone-cloudant-cloudantNoSQLDB
-  - iot-phone-iotf-service
-  host: iot-phone
-  name: iot-phone
+  - ignite-2016-hodor-cloudantNoSQLDB
+  - ignite-2016-hodor-iotf-service
+  host: ignite-2016-hodor-iot-phone
+  name: ignite-2016-hodor-iot-phone
   disk: 128M
   command: node app.js
   path: .
